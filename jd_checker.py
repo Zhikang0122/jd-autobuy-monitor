@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 url = "https://lite.jd.com/614833.html"
 
 # ✅ 替换为你自己的 Server酱 SendKey（SCT开头）
-sckey = "SCTxxxxxxxxxxxxxxxxxxxxx"
+sckey = "SCT277418TPZW6vZxtP3h6v0eoti0O3yR7"
 
 def check_stock():
     # 模拟真实浏览器访问，防止重定向到移动页面
