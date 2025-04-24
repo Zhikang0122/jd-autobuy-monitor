@@ -2,14 +2,13 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-# ✅ 商品页面（你要抢的相纸链接）
+# ✅ 商品信息
 url = "https://npcitem.jd.hk/10148775088416.html"
+sku_id = "10148775088416"
+max_price = 80.0  # 接受的最高价格
 
-# ✅ Server酱 SendKey（自动推送到微信）
+# ✅ 你的 Server酱 SendKey
 sckey = "SCT277418TPZW6vZxtP3h6v0eoti0O3yR7"
-
-# ✅ 设置最高接受价格（单位：元）
-max_price = 80
 
 def check_stock():
     headers = {
@@ -18,38 +17,41 @@ def check_stock():
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
 
+    # ✅ 第一步：获取商品页面文本（用来判断是否有货）
     try:
         response = requests.get(url, headers=headers, timeout=10)
     except Exception as e:
-        print("❌ 请求失败：", e)
+        print("❌ 页面请求失败：", e)
         return
 
     if response.status_code != 200:
-        print(f"❌ 页面请求失败，状态码: {response.status_code}")
+        print(f"❌ 页面状态码异常：{response.status_code}")
         return
 
     soup = BeautifulSoup(response.text, 'html.parser')
     text = soup.text
 
-    # ✅ 提取价格：从 JavaScript 数据中匹配 "price": "xx.xx"
-    price_match = re.search(r'"price"\s*:\s*"([\d.]+)"', response.text)
-    if price_match:
-        price = float(price_match.group(1))
-        print(f"🔍 当前商品价格：￥{price}")
-    else:
-        print("❌ 无法提取商品价格")
+    # ✅ 第二步：调用京东价格接口获取当前价格
+    price_api = f"https://p.3.cn/prices/mgets?skuIds=J_{sku_id}"
+    try:
+        price_response = requests.get(price_api, timeout=5)
+        price_json = price_response.json()
+        price = float(price_json[0]['p'])
+        print(f"💰 当前价格：￥{price}")
+    except Exception as e:
+        print("❌ 获取价格失败：", e)
         return
 
-    # ✅ 判断是否有货 + 是否为原价
+    # ✅ 第三步：判断是否有货 + 价格是否符合
     if ("加入购物车" in text or "立即购买" in text) and price <= max_price:
-        print("✅ 有货且价格合适，正在推送提醒...")
+        print("✅ 有货且价格合适，准备推送提醒...")
 
         title = f"📦 拍立得相纸补货！￥{price} 元"
-        desp = f"[点我抢购]({url})"
+        desp = f"[点我抢购 >>]({url})"
         push_url = f"https://sctapi.ftqq.com/{sckey}.send?title={title}&desp={desp}"
         requests.get(push_url)
     elif price > max_price:
-        print(f"⚠️ 有货但价格过高（￥{price} > ￥{max_price}），不推送")
+        print(f"⚠️ 有货但价格￥{price} 超过阈值￥{max_price}，不提醒")
     else:
         print("🚫 当前无货")
 
