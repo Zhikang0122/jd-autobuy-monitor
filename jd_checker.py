@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # 商品页面链接（建议用京东 item.jd.com 标准链接）
-url = "https://item.jd.com/100008348542.html"  # 👈 替换成你要监控的链接
+url = "https://item.jd.com/614833.html"
 
 # Server酱 SendKey
 sckey = "SCTxxxxxxxxxxxxxxxxxxxxx"  # 👈 替换成你的 SendKey
