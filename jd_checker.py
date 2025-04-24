@@ -2,13 +2,13 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-# 商品页面
+# ✅ 商品页面（你要抢的相纸链接）
 url = "https://npcitem.jd.hk/10148775088416.html"
 
-# Server酱 SendKey
-sckey = "SCT277418TPZW6vZxtP3h6v0eoti0O3yR7"  # ← 替换成你的 SendKey
+# ✅ Server酱 SendKey（自动推送到微信）
+sckey = "SCT277418TPZW6vZxtP3h6v0eoti0O3yR7"
 
-# 设置价格阈值（单位：元）
+# ✅ 设置最高接受价格（单位：元）
 max_price = 80
 
 def check_stock():
@@ -31,25 +31,25 @@ def check_stock():
     soup = BeautifulSoup(response.text, 'html.parser')
     text = soup.text
 
-    # 用正则从页面提取价格（适配京东页面的 ￥xx.xx）
-    price_match = re.search(r'￥\s*([\d.]+)', text)
+    # ✅ 提取价格：从 JavaScript 数据中匹配 "price": "xx.xx"
+    price_match = re.search(r'"price"\s*:\s*"([\d.]+)"', response.text)
     if price_match:
         price = float(price_match.group(1))
         print(f"🔍 当前商品价格：￥{price}")
     else:
-        print("❗ 无法提取商品价格")
+        print("❌ 无法提取商品价格")
         return
 
-    # 判断库存关键词 + 价格
+    # ✅ 判断是否有货 + 是否为原价
     if ("加入购物车" in text or "立即购买" in text) and price <= max_price:
-        print("✅ 有货且原价合理，正在推送提醒...")
+        print("✅ 有货且价格合适，正在推送提醒...")
 
-        title = f"📦 拍立得相纸补货！仅售￥{price}元"
-        desp = f"[点击抢购链接]({url})"
+        title = f"📦 拍立得相纸补货！￥{price} 元"
+        desp = f"[点我抢购]({url})"
         push_url = f"https://sctapi.ftqq.com/{sckey}.send?title={title}&desp={desp}"
         requests.get(push_url)
     elif price > max_price:
-        print(f"⚠️ 有货但价格过高（￥{price}），不提醒")
+        print(f"⚠️ 有货但价格过高（￥{price} > ￥{max_price}），不推送")
     else:
         print("🚫 当前无货")
 
