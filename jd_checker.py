@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 url = "https://npcitem.jd.hk/10148775088416.html"
 
 # ✅ 替换为你的真实 Server酱 SendKey（SCT 开头）
-sckey = "SCTxxxxxxxxxxxxxxxxxxxxx"
+sckey = "SCT277418TPZW6vZxtP3h6v0eoti0O3yR7"
 
 def check_stock():
     # ✅ 模拟 PC 浏览器访问，避免跳转
