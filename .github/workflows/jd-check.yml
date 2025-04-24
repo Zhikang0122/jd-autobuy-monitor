@@ -1,0 +1,24 @@
+name: 京东拍立得补货监控
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"  # 每10分钟运行一次
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install beautifulsoup4 requests
+
+      - name: Run script
+        run: python jd_checker.py
