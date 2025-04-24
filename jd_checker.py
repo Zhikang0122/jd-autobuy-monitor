@@ -1,23 +1,26 @@
 import requests
 from bs4 import BeautifulSoup
 
-# 商品页面链接（使用标准 JD 商品链接）
+# 商品页面链接（标准 JD 商品页）
 url = "https://item.jd.com/614833.html"
 
-# Server酱 SendKey（请替换成你的真实 key）
+# Server酱 SendKey（请替换为你的真实 key）
 sckey = "SCTxxxxxxxxxxxxxxxxxxxxx"
 
 def check_stock():
+    # 使用更强的浏览器模拟 headers，避免被跳转到移动端
     headers = {
-        'User-Agent': 'Mozilla/5.0'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Referer': 'https://item.jd.com/',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
     }
-    response = requests.get(url, headers=headers, timeout=10)
 
+    response = requests.get(url, headers=headers, timeout=10)
     if response.status_code != 200:
         print("❌ 页面请求失败")
         return
 
-    # 打印前1000字符用于调试：查看网页是否正常抓到
+    # 打印页面前1000字符用于调试
     print("🧾 页面预览（前1000字）：")
     print(response.text[:1000])
     print("-" * 60)
