@@ -1,45 +1,41 @@
 import requests
+import time
 
-# ✅ 腾讯云代理的 API 地址（代理了京东 p.3.cn 接口）
-proxy_api_url = "http://1356392297-2qzwoew2rb.ap-guangzhou.tencentscf.com/jd-price?sku=10148775088416"
-
-# ✅ 原商品详情页（用于 Server酱推送里的跳转链接）
-jd_url = "https://npcitem.jd.hk/10148775088416.html"
-
-# ✅ Server酱 SendKey（推送到你微信）
+# ✅ 中转 API 地址（腾讯云函数）
+proxy_api = "http://1356392297-2qzwoew2rb.ap-guangzhou.tencentscf.com/jd-price"
+sku_id = "10148775088416"
+max_price = 80.0
 sckey = "SCT277418TPZW6vZxtP3h6v0eoti0O3yR7"
 
-# ✅ 接受的最高价格
-max_price = 80.0
-
-def check_stock():
+def check_price():
     try:
-        response = requests.get(proxy_api_url, timeout=10)
-        if response.status_code != 200:
-            print(f"❌ 获取价格失败，状态码：{response.status_code}")
+        res = requests.get(f"{proxy_api}?sku={sku_id}", timeout=10)
+        if res.status_code != 200:
+            print(f"❌ 获取价格失败，状态码：{res.status_code}")
             return
 
-        data = response.json()
-        price = float(data.get("p", -1))  # 获取价格字段
+        data = res.json()
+        price_str = data.get("price")
 
+        if not price_str:
+            print("❌ 响应中未找到价格字段")
+            return
+
+        price = float(price_str)
         print(f"💰 当前价格：￥{price}")
 
-        # ✅ 判断价格
-        if 0 < price <= max_price:
-            print("✅ 补货原价命中！准备推送微信提醒...")
+        if price <= max_price:
+            print("✅ 价格满足条件，准备推送微信提醒...")
 
-            title = f"📦 拍立得相纸补货！￥{price} 元"
-            desp = f"[👉 点我立即抢购]({jd_url})"
+            title = f"📦 拍立得相纸到货啦！￥{price}"
+            desp = f"[点我立即抢购 >>](https://npcitem.jd.hk/{sku_id}.html)"
             push_url = f"https://sctapi.ftqq.com/{sckey}.send?title={title}&desp={desp}"
-            push_res = requests.get(push_url)
-            print("📬 推送结果：", push_res.text)
-        elif price > max_price:
-            print(f"⚠️ 当前价格 ￥{price} 超过原价 ￥{max_price}，不提醒")
+            requests.get(push_url)
         else:
-            print("🚫 暂时无货或未能成功获取价格")
+            print(f"⚠️ 当前价格￥{price} 超出设置的阈值￥{max_price}，不提醒")
 
     except Exception as e:
-        print("❌ 脚本异常：", e)
+        print("❌ 出现异常：", e)
 
 if __name__ == "__main__":
-    check_stock()
+    check_price()
